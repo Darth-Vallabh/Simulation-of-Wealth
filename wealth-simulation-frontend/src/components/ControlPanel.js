@@ -64,9 +64,7 @@ const renderBarGraph = (label, values, setter) => (
         height: 250,
         margin: { l: 50, r: 50, t: 30, b: 40 },
         xaxis: { title: 'Decile' },
-        yaxis: { title: label,
-        autorange: true
-        },
+        yaxis: { title: label },
       }}
       config={{ responsive: true }}
       onClick={(e) => {
