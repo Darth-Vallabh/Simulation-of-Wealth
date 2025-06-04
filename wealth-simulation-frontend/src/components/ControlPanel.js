@@ -50,7 +50,8 @@ const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41
           type: 'bar',
           x: Array.from({ length: NUM_DECILES }, (_, i) => `D${i + 1}`),
           y: values,
-          marker: { color: 'royalblue' },}]}
+          marker: { color: 'royalblue' },
+        }]}
         layout={{
           autosize: true,
           height: 250,
