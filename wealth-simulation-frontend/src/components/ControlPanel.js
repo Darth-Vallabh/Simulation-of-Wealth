@@ -56,7 +56,7 @@ const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41
           height: 250,
           margin: { l: 50, r: 50, t: 30, b: 40 },
           xaxis: { title: 'Decile' },
-          yaxis: { title: label},
+          yaxis: { title: label, range: [min, max] },
         }}
         config={{ responsive: true }}
         onClick={(e) => {
@@ -76,7 +76,6 @@ const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41
           </div>
         ))}
       </div>
-
     </div>
   );
 
