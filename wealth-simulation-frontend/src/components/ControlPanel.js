@@ -22,6 +22,9 @@ const [savingsRate, setSavingsRate] = useState([0, 0, 0.02, 0.05, 0.08, 0.12, 0.
 const [wageBandLow, setWageBandLow] = useState([0, 18001, 28501, 42001, 62001, 95771, 149759, 240001, 417432, 852669]);
 const [wageBandHigh, setWageBandHigh] = useState([18000, 28500, 42000, 62000, 95770, 149758, 240000, 417431, 852668, 5000000]);
 const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41, 0.34, 0.28, 0.22, 0.16, 0.1, 0.05]);
+const [avgBirthRate, setAvgBirthRate] = useState(avg(birthRate));
+const [avgDeathRate, setAvgDeathRate] = useState(avg(deathRate));
+const [avgNetMigration, setAvgNetMigration] = useState(avg(netMigration));
 
   const handleRun = () => {
     onRun({
@@ -39,111 +42,146 @@ const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41
       wage_band_low: wageBandLow,
       wage_band_high: wageBandHigh,
       unemployment_rate: unemploymentRate,
+        avg_birth_rate: avg(birthRate),
+    avg_death_rate: avg(deathRate),
+    avg_net_migration: avg(netMigration),
     });
   };
 
-  const renderBarGraph = (label, values, setter, min, max, step) => (
-    <div style={{ margin: '40px 0 40px 50px' }}>
-      <h4>{label}</h4>
-      <Plot
-        data={[{
-          type: 'bar',
-          x: Array.from({ length: NUM_DECILES }, (_, i) => `D${i + 1}`),
-          y: values,
-          marker: { color: 'royalblue' },
-        }]}
-        layout={{
-          autosize: true,
-          height: 250,
-          margin: { l: 50, r: 50, t: 30, b: 40 },
-          xaxis: { title: 'Decile' },
-          yaxis: { title: label, range: [min, max] },
-        }}
-        config={{ responsive: true }}
-        onClick={(e) => {
-          const pointIndex = e.points[0].pointIndex;
-          const newY = prompt(`Set value for Decile ${pointIndex + 1}`, values[pointIndex]);
-          if (newY !== null && !isNaN(newY)) {
-            const newValues = [...values];
-            newValues[pointIndex] = parseFloat(newY);
-            setter(newValues);
-          }
-        }}
+const renderBarGraph = (label, values, setter) => (
+  <div style={{ margin: '40px 0 40px 50px', maxWidth: '900px' }}>
+    <h4>{label}</h4>
+    <Plot
+      data={[{
+        type: 'bar',
+        x: Array.from({ length: NUM_DECILES }, (_, i) => `D${i + 1}`),
+        y: values,
+        marker: { color: 'royalblue' },
+      }]}
+      layout={{
+        autosize: true,
+        height: 250,
+        margin: { l: 50, r: 50, t: 30, b: 40 },
+        xaxis: { title: 'Decile' },
+        yaxis: { title: label },
+      }}
+      config={{ responsive: true }}
+      onClick={(e) => {
+        const pointIndex = e.points[0].pointIndex;
+        const newY = prompt(`Set value for Decile ${pointIndex + 1}`, values[pointIndex]);
+        if (newY !== null && !isNaN(newY)) {
+          const newValues = [...values];
+          newValues[pointIndex] = parseFloat(newY);
+          setter(newValues);
+        }
+      }}
+    />
+    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+      {values.map((val, i) => (
+        <div key={`${label}-val-${i}`} style={{ fontSize: '0.9em', width: '10%', textAlign: 'center' }}>
+          <strong>D{i + 1}</strong><br />{val.toFixed(2)}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+return (
+  <div>
+    <h2>Simulation Control Panel</h2>
+
+    <label style={{ marginLeft: '50px' }}>Total Population:</label>
+    <input
+      type="number"
+      value={totalPopulation}
+      onChange={(e) => setTotalPopulation(Number(e.target.value))}
+      style={{ marginLeft: '10px' }}
+    /><br />
+
+    <label style={{ marginLeft: '50px' }}>Time Steps:</label>
+    <input
+      type="number"
+      value={numTimeSteps}
+      onChange={(e) => setNumTimeSteps(Number(e.target.value))}
+      style={{ marginLeft: '10px' }}
+    /><br />
+
+    <label style={{ marginLeft: '50px' }}>Inheritance Tax Rate:</label>
+    <input
+      type="number"
+      step="0.01"
+      value={inheritanceTaxRate}
+      onChange={(e) => setInheritanceTaxRate(Number(e.target.value))}
+      style={{ marginLeft: '10px' }}
+    /><br />
+
+    <label style={{ marginLeft: '50px' }}>Wealth Tax Rate:</label>
+    <input
+      type="number"
+      step="0.01"
+      value={wealthTax}
+      onChange={(e) => setWealthTax(Number(e.target.value))}
+      style={{ marginLeft: '10px' }}
+    /><br />
+
+    <label style={{ marginLeft: '50px' }}>Capital Gains Tax Rate:</label>
+    <input
+      type="number"
+      step="0.01"
+      value={cgTax}
+      onChange={(e) => setCgTax(Number(e.target.value))}
+      style={{ marginLeft: '10px' }}
+    /><br />
+
+    {/* Average Rates Section */}
+    <div style={{ marginLeft: '50px', marginTop: '30px' }}>
+      <h4>Average Parameters (editable)</h4>
+
+      <label>Average Birth Rate:</label>
+      <input
+        type="number"
+        step="0.001"
+        value={avgBirthRate}
+        onChange={(e) => setAvgBirthRate(Number(e.target.value))}
+        style={{ marginLeft: '10px', marginRight: '20px' }}
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-        {values.map((val, i) => (
-          <div key={`${label}-val-${i}`} style={{ fontSize: '0.9em', width: '10%', textAlign: 'center' }}>
-            <strong>D{i + 1}</strong><br />{val.toFixed(2)}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
-  return (
-    <div>
-      <h2>Simulation Control Panel</h2>
-
-      <label style={{ marginLeft: '50px' }}>Total Population:</label>
+      <label>Average Death Rate:</label>
       <input
         type="number"
-        value={totalPopulation}
-        onChange={(e) => setTotalPopulation(Number(e.target.value))}
-        style={{ marginLeft: '10px' }}
-      /><br />
+        step="0.001"
+        value={avgDeathRate}
+        onChange={(e) => setAvgDeathRate(Number(e.target.value))}
+        style={{ marginLeft: '10px', marginRight: '20px' }}
+      />
 
-      <label style={{ marginLeft: '50px' }}>Time Steps:</label>
+      <label>Average Net Migration:</label>
       <input
         type="number"
-        value={numTimeSteps}
-        onChange={(e) => setNumTimeSteps(Number(e.target.value))}
+        step="0.001"
+        value={avgNetMigration}
+        onChange={(e) => setAvgNetMigration(Number(e.target.value))}
         style={{ marginLeft: '10px' }}
-      /><br />
-
-      <label style={{ marginLeft: '50px' }}>Inheritance Tax Rate:</label>
-      <input
-        type="number"
-        step="0.01"
-        value={inheritanceTaxRate}
-        onChange={(e) => setInheritanceTaxRate(Number(e.target.value))}
-        style={{ marginLeft: '10px' }}
-      /><br />
-
-      <label style={{ marginLeft: '50px' }}>Wealth Tax Rate:</label>
-      <input
-        type="number"
-        step="0.01"
-        value={wealthTax}
-        onChange={(e) => setWealthTax(Number(e.target.value))}
-        style={{ marginLeft: '10px' }}
-      /><br />
-
-      {/* NEW FIELD */}
-      <label style={{ marginLeft: '50px' }}>Capital Gains Tax Rate:</label>
-      <input
-        type="number"
-        step="0.01"
-        value={cgTax}
-        onChange={(e) => setCgTax(Number(e.target.value))}
-        style={{ marginLeft: '10px' }}
-      /><br />
-
-      {renderBarGraph("Wealth per Decile", wealthPerDecile, setWealthPerDecile, 0, 20000, 100)}
-      {renderBarGraph("Birth Rate per Decile", birthRate, setBirthRate, 0, 0.2, 0.01)}
-      {renderBarGraph("Death Rate per Decile", deathRate, setDeathRate, 0, 0.1, 0.01)}
-      {renderBarGraph("Net Migration per Decile", netMigration, setNetMigration, 0, 0.1, 0.01)}
-      {renderBarGraph("Rate of Return per Decile", rateOfReturn, setRateOfReturn, 0, 0.3, 0.01)}
-      {renderBarGraph("Savings Rate per Decile", savingsRate, setSavingsRate, 0, 1, 0.01)}
-      {renderBarGraph("Wage Band Low", wageBandLow, setWageBandLow, 0, 3000, 100)}
-      {renderBarGraph("Wage Band High", wageBandHigh, setWageBandHigh, 0, 10000, 100)}
-      {renderBarGraph("Unemployment Rate per Decile", unemploymentRate, setUnemploymentRate, 0, 1, 0.01)}
-
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <button onClick={handleRun} style={{ fontSize: '16px', padding: '10px 20px' }}>Run Simulation</button>
-      </div>
+      />
     </div>
 
-  );
+    {/* Graphs */}
+    {renderBarGraph("Wealth per Decile", wealthPerDecile, setWealthPerDecile)}
+    {renderBarGraph("Birth Rate per Decile", birthRate, setBirthRate)}
+    {renderBarGraph("Death Rate per Decile", deathRate, setDeathRate)}
+    {renderBarGraph("Net Migration per Decile", netMigration, setNetMigration)}
+    {renderBarGraph("Rate of Return per Decile", rateOfReturn, setRateOfReturn)}
+    {renderBarGraph("Savings Rate per Decile", savingsRate, setSavingsRate)}
+    {renderBarGraph("Wage Band Low", wageBandLow, setWageBandLow)}
+    {renderBarGraph("Wage Band High", wageBandHigh, setWageBandHigh)}
+    {renderBarGraph("Unemployment Rate per Decile", unemploymentRate, setUnemploymentRate)}
+
+    <div style={{ textAlign: 'center', marginTop: '40px' }}>
+      <button onClick={handleRun} style={{ fontSize: '16px', padding: '10px 20px' }}>
+        Run Simulation
+      </button>
+    </div>
+  </div>
+);
 
 };
 
