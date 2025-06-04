@@ -25,6 +25,7 @@ const [unemploymentRate, setUnemploymentRate] = useState([0.58, 0.53, 0.47, 0.41
 const [avgBirthRate, setAvgBirthRate] = useState(avg(birthRate));
 const [avgDeathRate, setAvgDeathRate] = useState(avg(deathRate));
 const [avgNetMigration, setAvgNetMigration] = useState(avg(netMigration));
+const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
   const handleRun = () => {
     onRun({
@@ -63,7 +64,9 @@ const renderBarGraph = (label, values, setter) => (
         height: 250,
         margin: { l: 50, r: 50, t: 30, b: 40 },
         xaxis: { title: 'Decile' },
-        yaxis: { title: label },
+        yaxis: { title: label,
+        autorange: true
+        },
       }}
       config={{ responsive: true }}
       onClick={(e) => {
